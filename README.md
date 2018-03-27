@@ -3,7 +3,6 @@
 
 ---
 
-
 # Required Steps for a Passing Submission:
 1. Load the 2.5D map in the colliders.csv file describing the environment.
 2. Discretize the environment into a grid or graph representation.
@@ -18,10 +17,6 @@
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
-### Writeup / README
-
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  
-
 ### Explain the Starter Code
 
 #### 1. Explain the functionality of what's provided in `motion_planning.py` and `planning_utils.py`
@@ -69,7 +64,7 @@ We can access the local position from the variables available at the Drone class
 # Retrieve current global position
 current_global_pos  = (self._longitude, self._latitude, self._altitude)
 
-# TODO: convert to current local position using global_to_local()
+# Convert to current local position using global_to_local()
 current_local_pos = global_to_local(current_global_pos, self.global_home)
 
 ```
@@ -79,13 +74,12 @@ current_local_pos = global_to_local(current_global_pos, self.global_home)
 We can use the current_local_pos from the previous step and offset it by the grid's origin to assign the start location to the current location of the Drone.
 
 ```
-# TODO: convert start position to current position rather than map center
+# Convert start position to current position rather than map center
 grid_start = (int(current_local_pos[0]-north_offset), int(current_local_pos[1]-east_offset))
 
 ```
 
 #### 4. Set grid goal position from geodetic coords
-This step is to add flexibility to the desired goal location. Should be able to choose any (lat, lon) within the map and have it rendered to a goal location on the grid.
 
 For this step first we set the Goal Position in geodetic coordinates in the goal_global_pos variable, then this is converted to NED coordinates using the global_to_local method; only if using graphs, we find the closest point to the Goal using the closest_point method.
 
@@ -181,9 +175,3 @@ waypoints = [[p[0] + north_offset, p[1] + east_offset, p[2], 0] for p in pruned_
 It works!
 
 ### Double check that you've met specifications for each of the [rubric](https://review.udacity.com/#!/rubrics/1534/view) points.
-  
-# Extra Challenges: Real World Planning
-
-For an extra challenge, consider implementing some of the techniques described in the "Real World Planning" lesson. You could try implementing a vehicle model to take dynamic constraints into account, or implement a replanning method to invoke if you get off course or encounter unexpected obstacles.
-
-

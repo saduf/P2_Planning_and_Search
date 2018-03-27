@@ -22,12 +22,31 @@
 
 #### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  
 
-You're reading it! Below I describe how I addressed each rubric point and where in my code each point is handled.
-
 ### Explain the Starter Code
 
 #### 1. Explain the functionality of what's provided in `motion_planning.py` and `planning_utils.py`
-These scripts contain a basic planning implementation that includes...
+
+The first difference between the backyard_flyer_solution.py vs motion_planning.py is that the latter contains a PLANNING STATE, which triggers an state callback
+to self.plan_path(). 
+
+In the backyard_flyer_solution.py the waypoint_transition function receives hard coded transition points to fly an square patern of size 10mx10m with a 3m altitude. 
+The starter code for motion_planning.py uses A* to find a path in a grid from the information contained in the colliders.csv, this file provide us with the North and East
+dimension of the grid, as well as the center of the obstacles in NED coordinates, and the size of them in form of delta values.  
+
+ A grid of north_size * east_size will be generated to represent the world, where the free space will be marked with "0" and the obstacles represented by "1". Starter code only 
+has vertical and horizontal ACTIONS for our drone, this is why we see the drone moving in a saggy way as it is jumping 1 space horizontal or 1 vertical at a time to reach the Goal 10m 
+ahead of its starting position. The starting position of the drone is given by the central cordinates NE (north_offset = north_min, east_offset = east_min) returned by the create_grid function call.
+
+A* will return a complete and optimal path to the goal location using Manhatthan heuristic to update the cost of the partial paths being generated, and the final cost of the optimal path as well. 
+The cost of each horizontal or vertical action has a default cost of "1", as it is moving 1 horizontal or vertical position at a time. The Manhattan heuristic funtion will return difference beween the current 
+position of the drone of the grid compared to the position of the Goal cell. 
+
+Once an optimal and complete path is returned by the A* method, the waypoints are obtained by offsetting the coordinates in the path by the grid origin (north_offset = north_min, east_offset = east_min), 
+and these waypoints are sent to the drone trhough the Mavlink connection.
+
+Once the waypoints are defined, these are packed as a binary bytes serialized by the msgpack and sent to the drone through mavlink_connection -> pymavlink - > mavserial. 
+Once the drone is in WAYPOINT transition state, the LOCAL_POSITION callback checks on the local_position of the drone compared to its target_position to control the flight path 
+by sending cmd_position instructions from goal to destination, similar to how the drone is controlled in the back_flyer_solution.py file. 
 
 And here's a lovely image of my results (ok this image has nothing to do with it, but it's a nice example of how to include images in your writeup!)
 ![Top Down View](./misc/high_up.png)

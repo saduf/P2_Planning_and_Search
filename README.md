@@ -151,11 +151,11 @@ Generating a Graph in 2.5D using Probabilistic Roadmap can be time consuming, th
 
 
 
-![2.5D Graph of 1600 points sampled, 521 connected points after collision detection](./graph_25D_1600_nodes.png)
+![2.5D Graph of 1600 points sampled, 521 connected points after collision detection](./misc/graph_25D_1600_nodes.png)
 
 The following figure shows the results of performing A* search over our 2.5D World representation, the coordinates are grid_start=(37.797877, -122.401332, 13) and grid_goal=(37.793710, -122.395325, 19). It is important to provide the altitude in the start and goal coordinates, we map these values to the closest_point, and in case that the altitude is not provided the resulting mapping of coordinates could result different to what is expected. A grid_points_1200.csv file is provided including all the NED coordinates in the figure to help with the start and goal points selection.
 
-![2.5D A* Path for grid_start=(37.797877, -122.401332, 13) and grid_goal=(37.789825, -122.394700, 17)](./25D_path_long.png)
+![2.5D A* Path for grid_start=(37.797877, -122.401332, 13) and grid_goal=(37.789825, -122.394700, 17)](./misc/25D_path_long.png)
 
 
 #### 6. Cull waypoints 

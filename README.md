@@ -40,7 +40,7 @@ Once the drone is on WAYPOINT transition state, the LOCAL_POSITION callback chec
 
 ### Implementing Your Path Planning Algorithm
 
-#### 1. Set your global home position
+#### 1. Set your global home position [FCND-Motion_Planning_graphs/motion_planing.py:lines(125,132)]
 
 Open the file using the csv library and read the column[0] and column[1] of the first row, ; we are only interested on the values so we drop the variables names by reading only from the 5th character to the end of the column. Finally we cast the value to float type.
 
@@ -56,7 +56,7 @@ self.set_home_position(lon0, lat0, 0)  # set the current location to be the home
 
 ```
 
-#### 2. Set your current local position
+#### 2. Set your current local position [FCND-Motion_Planning_graphs/motion_planing.py:lines(134,138)]
 
 We can access the local position from the variables available at the Drone class implementation. Then we can use the method global_to_local from the udacidrone/frame_utils.py to convert the geodetic values to NED coordinates.
 
@@ -69,7 +69,7 @@ current_local_pos = global_to_local(current_global_pos, self.global_home)
 
 ```
 
-#### 3. Set grid start position from local position
+#### 3. Set grid start position from local position [FCND-Motion_Planning_graphs/motion_planing.py:lines(166,167)]
 
 We can use the current_local_pos from the previous step and offset it by the grid's origin to assign the start location to the current location of the Drone.
 
@@ -79,7 +79,7 @@ grid_start = (int(current_local_pos[0]-north_offset), int(current_local_pos[1]-e
 
 ```
 
-#### 4. Set grid goal position from geodetic coords
+#### 4. Set grid goal position from geodetic coords [FCND-Motion_Planning_graphs/motion_planing.py:lines(169,172)]
 
 For this step first we set the Goal Position in geodetic coordinates in the goal_global_pos variable, then this is converted to NED coordinates using the global_to_local method; only if using graphs, we find the closest point to the Goal using the closest_point method.
 
@@ -99,7 +99,7 @@ goal_ne_g = closest_point(G, grid_goal)
 
 ```
 
-#### 5. Modify A* to include diagonal motion (or replace A* altogether)
+#### 5. Modify A* to include diagonal motion (or replace A* altogether) [FCND-Motion_Planning_graphs/motion_planing.py:lines(185)]
 
 In order to support diagonal actions we need to add them in the Action class at the planning_utils.py file, a diagonal movement involves a displacement of 1 horizontal and 1 vertical cell at a time, and this displacement has a cost of sqrt(2), a total of 4 diagonal movements are possible: NORTH_WEST, NORTH_EAST, SOUTH_WEST, and SOUTH_EAST.
 
@@ -127,7 +127,7 @@ For a graph representation using Voronoi in combination with grid representation
 
 Make sure to update line 171 in the motion_planning.py file with a goal geodetic coordinates to find a path from start to goal using A\*; e.g. goal_global_pos = (-122.401278, 37.797193)
 
-![2D Graph A* path for start_ne = (40., 830.) goal_ne = (840., 100.)](./misc/graph1.png)
+![2D Graph A* path for start_ne = (40., 830.) goal_ne = (840., 100.)](./misc/graph2.png)
 
 A final approach was using a 2.5D graph, where the search space is sampled with Random Points within the range (north_min to north max, east_min to east_max, alt_min to alt_max), the random points are checked against the the representation Polyhedra of the colliders generated using the python Shapely library; the sklearn KDTree library is used to find the nearest obstacles neighboors for a given point, and then validate whether the point is out of the area of the obstacles found.
 
@@ -143,12 +143,13 @@ The provided 2.5D Graph file in this project is graph_1200_SD_nodes.gpikle, and 
 
 The following figure shows the results of performing A* search over our 2.5D representation of the world, the coordinates are grid_start=(37.797877, -122.401332, 13) and grid_goal=(37.793710, -122.395325, 19). It is important to provide the altitude in the start and goal coordinates, as we map these values to the closest_point, and in case that the altitude is not provided the resulting mapping of coordinates could result different to what is expected. A grid_points_1200.csv file is provided including all the NED coordinates in the figure to help with the goal's coordinates selection.
 
+A 2.5D graph based solution is proposed in the files contained in the FCND-Motion-Planning_25D directory.
 Make sure to update line 171 in the motion_planning.py file with a goal geodetic coordinates to find a path from start to goal using A\* search; e.g. goal_global_pos = (-122.394700, 37.789825, 13)
 
 ![2.5D A* Path for start_global_pos=(37.797877, -122.401332, 13) and goal_global_pos=(37.789825, -122.394700, 17)](./misc/25D_path_long.png)
 
 
-#### 6. Cull waypoints 
+#### 6. Cull waypoints [FCND-Motion_Planning_graphs/motion_planing.py:lines(191,193)]
 
 Checking for colliniarity betwen 3 points, Area = det([p1 p2 p3]) = 0 will be sufficient for points represented in 2D, where the 3rd dimension can be set to be the same value for the 3 points. 
 
@@ -156,7 +157,11 @@ In a 2.5D graph we can check for collinearity in the same way we are doing for a
 
 An application for a 2.5D representation of the world were the altitude is sampled for a value > 212 + safety_dstance, which means that every waypoint in a plan will be executed above the alt_max defined by the tallest building in the search space. This type of plan allows the drone to travel to any location in the graph with a highly pruned trajectory for lage values of epsilon, which in many cases will be the wanted behaviour. When the number of points is asympotically infinite, the optimal path is guaranted. 
 
+![2.5D A* Path for start_global_pos=(37.797610, -122.401048, 225) and goal_global_pos=(37.790690, -122.392496, 225)](./misc/flying_225.png)
+
 Prunning the path involves to iteratively check on every point in the path found by the A* method, and then use the collinearity_check function to find the determinant between the 3 points, finally we compare the determinat to the value of epsilon to allow for a felxible pruning depending of our application goals. 
+
+![Pruning start_global_pos=(37.797610, -122.401048, 225) and goal_global_pos=(37.790690, -122.392496, 225)](./misc/pruning.png)
 
 
 ```
@@ -173,5 +178,3 @@ waypoints = [[p[0] + north_offset, p[1] + east_offset, p[2], 0] for p in pruned_
 ### Execute the flight
 #### 1. Does it work?
 It works!
-
-### Double check that you've met specifications for each of the [rubric](https://review.udacity.com/#!/rubrics/1534/view) points.
